@@ -30,7 +30,6 @@ class InputValue(QWidget):
 
 
 if __name__ == '__main__':
-
     app = QApplication(sys.argv)
     ex = InputValue()
     sys.exit(app.exec_())
