@@ -1,0 +1,6 @@
+/env
+/dist
+/build
+/.vscode
+*.spec
+.DS_Store
