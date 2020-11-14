@@ -4,3 +4,4 @@
 /.vscode
 *.spec
 .DS_Store
+*.log

@@ -82,16 +82,8 @@ class InputValue(QWidget):
         except Exception as e:
             QMessageBox.question(self, 'Response', "Sorry, you have error in input values! Please try again.", QMessageBox.Ok, QMessageBox.Ok)
             return 0        
-        log, result = main(args)
-        print(type(result))
-        print(result)
-        
-        try:
-            r = ', '.join([str(x) for x in result])
-        except Exception:
-            r = "No result"
-        
-        QMessageBox.question(self, 'Response', f"Response:\nC = ({r})\nM = {len(result)}", QMessageBox.Ok, QMessageBox.Ok)
+        m = main(args)
+        QMessageBox.question(self, 'Response', f"Response:\n{m}", QMessageBox.Ok, QMessageBox.Ok)
 
     def changeTitle(self, state):
         if state == Qt.Checked:
