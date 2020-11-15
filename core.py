@@ -1,19 +1,15 @@
 import argparse
 from math import gcd
-import logging
-
-# init logger
-logging.basicConfig(filename='gf.log', level=logging.INFO, format='%(asctime)s %(message)s')
-logger = logging.getLogger("main")
 
 
 
-def get_pn_min(m, Rm, a):
+def get_pn_min(m, Rm, a, S):
     pn = [a]
-    for i in range(m - 1):
+    print(S)
+    for i in range(S - 1):
         value = pn[i]*m % Rm
         pn.append(value)
-    logger.info(f"Сопряжение={pn}, {min(pn)}")
+    print(pn)
     return min(pn)
 
 
@@ -33,26 +29,41 @@ def convert_base(num, to_base=10, from_base=10):
         return convert_base(n // to_base, to_base) + alphabet[n % to_base]
 
 
-def with_r(p, m, n, r):
-    logger.info('Вычисления с использованием параметра r.')
+def compute_indexes(p, m, n, r):
     N = p**(m*n) - 1
     S = m*n
     l = int((p**S - 1) / (p**m - 1) + 1)
 
-    logger.info(f'N = {N}, S = {S}, l = {l}')
     if p > 2:
         C10 = [r + i*(p**m - 1) for i in range(l + 1)]
     elif p == 2:
         C10 = [r + 2*i*(p**m - 1) for i in range(l + 1)]
-
-    logger.info(f'C10 = {C10}')
     
     rp = convert_base(C10[0], to_base=p)
 
     def gc(s):
         r = 0
+        m = {
+            "0": 0,
+            "1": 1,
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 5,
+            "6": 6,
+            "7": 7,
+            "8": 8,
+            "9": 9,
+            "A": 10,
+            "B": 11,
+            "C": 12,
+            "D": 13,
+            "E": 14,
+            "F": 15
+
+        }
         for i in s:
-            r += int(i)
+            r += m[i]
         return r
 
     gr = gc(rp)
@@ -72,20 +83,11 @@ def with_r(p, m, n, r):
             if pS % 2 == 1:
                 match += [pS]
     C10 = sorted(set(match))
-    logger.info(f'C10 = {C10}')
-    msg = f"""
-N = {p}^{S} - 1 = {p**S - 1}
-C10 = {C10}
-M = {len(C10)}
-C{p} = {[convert_base(i, p) for i in C10]}
-    """
-    return msg
+    return C10, [convert_base(i, p) for i in C10]
 
 def without_r(p, m, n):
-    logger.info("Вычисления без использованием параметра r.")
     Rm = p**m - 1
     S = m * n
-    logger.info(f"p^m-1={Rm}")
     r=[]
     
     # print([i for i in range(1, p**m - 1)])
@@ -93,26 +95,21 @@ def without_r(p, m, n):
         n_gcd=gcd(n, Rm)
 
         if n_gcd == 1:
-            logger.info(f"n={n}, НОД({n}, {Rm}) = {n_gcd}")
-            pn_min=get_pn_min(m, Rm, n)
+            pn_min=get_pn_min(p, Rm, n, S)
             if pn_min == n:
                 r.append(n)
 
-    logger.info(f"r = {r}")
-
-    msg = f"""
-N = {p}^{S} - 1 = {p**S - 1}
-R10 = {r}
-R{p} = {[convert_base(i, p) for i in r]}
-    """
-    return msg
+    try:
+        if r[0] == 1:
+            r = r[1:]
+    except:
+        pass
+    return r
 
 def main(args):
     p=args["p"]
     m=args["m"]
     n=args["n"]
-    
-    logger.info(f"\n\n\nВходные параметры: {args}")
 
     if args["use_r"]:
         r=args["r"]
