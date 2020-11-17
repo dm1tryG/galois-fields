@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (
     QTableWidgetItem
 )
 from PyQt5.QtCore import Qt, pyqtSlot
-from core import without_r, compute_indexes
+from core import without_r, compute_indexes, convert_base
 
 from custom_table import TableWidgetCustom
 
@@ -57,9 +57,11 @@ class InputValue(QWidget):
         self.n.move(150, lvl + 25)
 
 
-        self.setGeometry(100, 200, 440, 600)
+        self.setGeometry(100, 200, 540, 600)
         self.setWindowTitle('Вычисление индексов децимации.')
+        
 
+        
 
         button = QPushButton('Вычислить', self)
         button.setToolTip('Вычислить')
@@ -70,26 +72,42 @@ class InputValue(QWidget):
             p = int(self.p.currentText())
             m = int(self.m.text())
             n = int(self.n.text())
+
+            self.n_lbl = QLabel(self)
+            self.n_lbl.move(40, lvl + 60)
+            self.n_lbl.setText(f"N={p**(m*n)}")
+
         except Exception as e:
             QMessageBox.question(self, 'Ошибка', "Введены неверные значения!\nПроверьте, пожалуйста!", QMessageBox.Ok, QMessageBox.Ok)
             return 0
         self.computed_m = without_r(p, m, n)
 
+        
+        self.M_lbl = QLabel(self)
+        self.M_lbl.move(110, lvl + 60)
+        self.M_lbl.setText(f"M={len(self.computed_m)}")
+        
+
         self.tableWidget = TableWidgetCustom(self)
-        self.tableWidget.setColumnCount(1)
+        self.tableWidget.setColumnCount(2)
         self.tableWidget.cellClicked.connect(self.cell_was_clicked)
         self.tableWidget.move(40, 200)
-        self.tableWidget.resize(100, 300)
+        self.tableWidget.resize(220, 300)
         self.tableWidget.setColumnWidth(0, 80);
         self.create_vector_r(self.computed_m)
 
         self.indexes, self.p_indexes = compute_indexes(p, m, n, self.computed_m[0])
         self.tableOfIndexes = TableWidgetCustom(self)
         self.tableOfIndexes.setColumnCount(2)
-        self.tableOfIndexes.move(200, 200)
+        self.tableOfIndexes.move(300, 200)
         self.tableOfIndexes.resize(200, 300)
         self.tableOfIndexes.setColumnWidth(0, 80)
         self.create_table_of_indexes()
+        
+        self.L_lbl = QLabel(self)
+        self.L_lbl.move(180, lvl + 60)
+        self.L_lbl.resize(100, 30)
+        self.L_lbl.setText(f"L={len(self.indexes)}")
         self.show()
 
     def create_table_of_indexes(self):
@@ -104,10 +122,12 @@ class InputValue(QWidget):
 
     def create_vector_r(self, r):
         # Create table
+        p = int(self.p.currentText())
         self.tableWidget.setRowCount(len(r))
-        self.tableWidget.setHorizontalHeaderLabels(['r'])
+        self.tableWidget.setHorizontalHeaderLabels(['r', 'p-ичная'])
         for i in range(len(r)):
-            self.tableWidget.setItem(0, i, QTableWidgetItem(str(r[i])))
+            self.tableWidget.setItem(i, 0, QTableWidgetItem(str(r[i])))
+            self.tableWidget.setItem(i, 1, QTableWidgetItem(str(convert_base(r[i], p))))
 
         # table selection change
         self.tableWidget.doubleClicked.connect(self.on_click)
@@ -120,6 +140,7 @@ class InputValue(QWidget):
             m = int(self.m.text())
             n = int(self.n.text())
             
+            self.n_lbl.setText(f"N={p**(m*n)}")
             if p**(m*n) - 1 > 10000000:
                 raise Exception
         except Exception as e:
@@ -136,7 +157,7 @@ class InputValue(QWidget):
         # R{p} = {[convert_base(i, p) for i in r]}
         #     """      
         self.computed_m = without_r(p, m, n)
-        print(self.computed_m)
+        self.M_lbl.setText(f"M={len(self.computed_m)}")
         self.create_vector_r(self.computed_m)
         self.cell_was_clicked(0, 0)
         self.tableWidget.item(0, 0).setSelected(True)
@@ -171,9 +192,12 @@ class InputValue(QWidget):
             QMessageBox.question(self, 'Ошибка', "Введены неверные значения!\nПроверьте, пожалуйста!", QMessageBox.Ok, QMessageBox.Ok)
             return 0
         r = self.computed_m[r]
-
+        
+        
         print(p, m, n, r)
         self.indexes, self.p_indexes = compute_indexes(p, m, n, r)
+        
+        self.L_lbl.setText(f"L={len(self.indexes)}")
         print(self.indexes, self.p_indexes)
         self.create_table_of_indexes()
 
